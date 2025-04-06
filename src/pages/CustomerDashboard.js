@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const CustomerDashboard = () => {
   // In a real app, you would fetch this data from your backend API
-  const [projects, setProjects] = useState([
+  const [projects] = useState([
     {
       id: 1,
       name: 'Zoom Phone Deployment',
