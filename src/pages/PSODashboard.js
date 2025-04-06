@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 const PSODashboard = () => {
   // In a real app, you would fetch this data from your backend API
-  const [projects, setProjects] = useState([
+  const [projects] = useState([
     {
       id: 1,
       name: 'Acme Corp Zoom Phone Deployment',
