@@ -9,7 +9,8 @@ import Navbar from './components/Navbar';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, currentUser } = useAuth();
+  // Fix: Remove currentUser from destructuring since it's not used
+  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
