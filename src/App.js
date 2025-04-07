@@ -10,26 +10,26 @@ import Navbar from './components/Navbar';
 // Protected route component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, currentUser } = useAuth();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
-  
+
   return children;
 };
 
 function AppContent() {
-  const { currentUser } = useAuth();
-  
+  const { currentUser: _currentUser } = useAuth();
+
   return (
     <>
-      {currentUser && <Navbar user={currentUser} />}
+      {_currentUser && <Navbar user={_currentUser} />}
       <div className="container mt-4">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={
             <ProtectedRoute>
-              {currentUser?.role === 'pso_manager' || currentUser?.role === 'project_engineer' ? 
+              {_currentUser?.role === 'pso_manager' || _currentUser?.role === 'project_engineer' ? 
                 <PSODashboard /> : <CustomerDashboard />}
             </ProtectedRoute>
           } />
@@ -55,4 +55,5 @@ function App() {
 }
 
 export default App;
+
 
