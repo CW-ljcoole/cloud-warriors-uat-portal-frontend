@@ -1,55 +1,58 @@
-import React, { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import './App.css';
-
-// Import pages
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import PSODashboard from './pages/PSODashboard';
 import CustomerDashboard from './pages/CustomerDashboard';
 import TestExecution from './pages/TestExecution';
-import NotFound from './pages/NotFound';
+import Navbar from './components/Navbar';
+
+// Protected route component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, currentUser } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+  
+  return children;
+};
+
+function AppContent() {
+  const { currentUser } = useAuth();
+  
+  return (
+    <>
+      {currentUser && <Navbar user={currentUser} />}
+      <div className="container mt-4">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              {currentUser?.role === 'pso_manager' || currentUser?.role === 'project_engineer' ? 
+                <PSODashboard /> : <CustomerDashboard />}
+            </ProtectedRoute>
+          } />
+          <Route path="/test-execution/:projectId" element={
+            <ProtectedRoute>
+              <TestExecution />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </div>
+    </>
+  );
+}
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState('');
-
-  const handleLogin = (authenticated, role) => {
-    setIsAuthenticated(authenticated);
-    setUserRole(role);
-  };
-
   return (
-    <div className="App">
-      <Routes>
-        <Route path="/" element={<Login onLogin={handleLogin} />} />
-        <Route 
-          path="/pso-dashboard" 
-          element={
-            isAuthenticated && userRole === 'pso_manager' ? 
-            <PSODashboard /> : 
-            <Navigate to="/" />
-          } 
-        />
-        <Route 
-          path="/customer-dashboard" 
-          element={
-            isAuthenticated && ['customer_admin', 'customer_supervisor', 'customer_agent'].includes(userRole) ? 
-            <CustomerDashboard /> : 
-            <Navigate to="/" />
-          } 
-        />
-        <Route 
-          path="/test-execution/:projectId" 
-          element={
-            isAuthenticated ? 
-            <TestExecution /> : 
-            <Navigate to="/" />
-          } 
-        />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </div>
+    <Router>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </Router>
   );
 }
 
 export default App;
+
