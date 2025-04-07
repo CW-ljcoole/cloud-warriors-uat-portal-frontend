@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import '../styles/Modal.css';
 import { Container, Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 const PSODashboard = () => {
-  // In a real app, you would fetch this data from your backend API
   const [projects] = useState([
     {
       id: 1,
@@ -31,6 +32,52 @@ const PSODashboard = () => {
     }
   ]);
 
+  const [showModal, setShowModal] = useState(false);
+  const [newProject, setNewProject] = useState({
+    name: '',
+    customer: '',
+    status: 'Not Started',
+    due_date: '',
+    description: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewProject({
+      ...newProject,
+      [name]: value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/projects`,
+        newProject,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      setNewProject({
+        name: '',
+        customer: '',
+        status: 'Not Started',
+        due_date: '',
+        description: ''
+      });
+      setShowModal(false);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error creating project:', error);
+      alert('Failed to create project. Please try again.');
+    }
+  };
+
   return (
     <Container>
       <Row className="mt-4 mb-4">
@@ -39,7 +86,12 @@ const PSODashboard = () => {
           <p>Manage your UAT projects and monitor customer testing progress</p>
         </Col>
         <Col xs="auto">
-          <Button variant="primary">Create New Project</Button>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => setShowModal(true)}
+          >
+            Create New Project
+          </button>
         </Col>
       </Row>
 
@@ -67,6 +119,7 @@ const PSODashboard = () => {
             </Card.Body>
           </Card>
         </Col>
+
         <Col md={8}>
           <Card>
             <Card.Body>
@@ -89,8 +142,8 @@ const PSODashboard = () => {
                       <td>{project.customer}</td>
                       <td>
                         <Badge bg={
-                          project.status === 'Completed' ? 'success' : 
-                          project.status === 'In Progress' ? 'primary' : 
+                          project.status === 'Completed' ? 'success' :
+                          project.status === 'In Progress' ? 'primary' :
                           'secondary'
                         }>
                           {project.status}
@@ -111,8 +164,87 @@ const PSODashboard = () => {
           </Card>
         </Col>
       </Row>
+
+      {showModal && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Create New Project</h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">Project Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="name"
+                      name="name"
+                      value={newProject.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="customer" className="form-label">Customer</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="customer"
+                      name="customer"
+                      value={newProject.customer}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="due_date" className="form-label">Go-Live Date</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      id="due_date"
+                      name="due_date"
+                      value={newProject.due_date}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="description" className="form-label">Description</label>
+                    <textarea
+                      className="form-control"
+                      id="description"
+                      name="description"
+                      value={newProject.description}
+                      onChange={handleInputChange}
+                      rows="3"
+                    ></textarea>
+                  </div>
+                  <div className="modal-footer">
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      onClick={() => setShowModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">Create Project</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Container>
   );
 };
 
 export default PSODashboard;
+
