@@ -1,5 +1,6 @@
+// Updated AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import { login as apiLogin } from '../services/api'; // Import the login function from api.js
 
 const AuthContext = createContext();
 
@@ -14,7 +15,13 @@ export const AuthProvider = ({ children }) => {
     const user = localStorage.getItem('user');
     
     if (token && user) {
-      setCurrentUser(JSON.parse(user));
+      try {
+        setCurrentUser(JSON.parse(user));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
     
     setLoading(false);
@@ -22,12 +29,10 @@ export const AuthProvider = ({ children }) => {
   
   const login = async (email, password) => {
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/auth/login`,
-        { email, password }
-      );
+      // Use the imported login function from api.js
+      const response = await apiLogin(email, password);
       
-      const { token, user } = response.data;
+      const { token, user } = response;
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
